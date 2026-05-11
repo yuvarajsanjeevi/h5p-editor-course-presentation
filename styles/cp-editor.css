@@ -242,6 +242,63 @@
 .h5p-course-presentation .h5p-element.focused .h5p-element-outer {
   outline: 1px solid #0099ff;
 }
+
+/* Table styling to imitate ckeditor 5 */
+.h5p-course-presentation .h5p-table-outer-element {
+  /* The figure around the table */
+  figure.table {
+    display: table;
+    table-layout: fixed;
+    margin: 0 auto;
+    padding: 0;
+    float: left;
+
+    /* The actual table */
+    table {
+      border-collapse: collapse;
+      height: 100%;
+      width: 100%;
+      border-spacing: 0;
+      border-width: 1px;
+      border-color:  #494949;
+
+      td, th {
+        padding: 1px;
+        border-color:  #494949;
+        border-bottom-style: solid;
+      }
+
+      td {
+        border-width: 0.083em;
+      }
+
+      th {
+        border-width: .167em;
+      }
+
+      tr:last-child > td {
+        border-bottom-style: none;
+      }
+    }
+
+    figcaption {
+      background-color: transparent;
+      caption-side: top;
+      color: #333;
+      display: table-caption;
+      font-size: .75em;
+      outline-offset: -1px;
+      padding: .6em;
+      text-align: center;
+      word-break: break-word;
+    }
+  }
+
+  .table-overflow-protection {
+    clear: both;
+  }
+}
+
 .h5p-course-presentation .h5p-element > div {
   z-index: 1;
 }
@@ -407,17 +464,8 @@
   box-shadow: 0 0 0.25em 0.125em #53a0ff;
   outline: none;
 }
-.h5peditor .h5p-active-surface {
-  margin-bottom: 6%;
-}
 .h5peditor .h5p-active-surface .h5p-box-wrapper {
   height: 100%;
-}
-.h5peditor .h5p-active-surface .h5p-slidecontrols {
-  bottom: -1.9em;
-}
-.h5peditor .h5p-active-surface .h5p-footer {
-  margin-top: -1em;
 }
 .h5peditor .field.disabled,
 .h5peditor .field.disabled .h5peditor-field-description {
@@ -517,7 +565,7 @@
   height: 100%;
   background: rgba(242,250,255,0.75);
   z-index: 10;
-  display: flex; 
+  display: flex;
   justify-content: center;
   align-items: center;
   font-size: xx-large;
@@ -526,4 +574,22 @@
 
 .h5p-coursepresentation-editor .h5peditor-dragnbar .h5p-dragnbar-li .h5p-dragnbar-summary-button ~ .h5p-dragnbar-tooltip {
   z-index: 3;
+}
+
+.h5p-coursepresentation-editor .h5p-multi-media-choice-option-list {
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.h5p-coursepresentation-editor .h5p-course-presentation .h5p-course-presentation-active-surface {
+  margin-bottom: 3em;
+}
+.h5p-coursepresentation-editor .h5p-course-presentation .h5p-course-presentation-active-surface .h5p-footer {
+  position: absolute;
+  top: 100%;
+  background-color: transparent;
+}
+.h5p-coursepresentation-editor .h5p-course-presentation .h5p-course-presentation-active-surface .h5p-slidecontrols {
+  bottom: auto;
+  top: 100%;
 }

@@ -1,14 +1,14 @@
 {
   "title": "Course Presentation Editor",
   "majorVersion": 1,
-  "minorVersion": 24,
-  "patchVersion": 1,
+  "minorVersion": 26,
+  "patchVersion": 6,
   "runnable": 0,
   "machineName": "H5PEditor.CoursePresentation",
   "author": "Joubel",
   "coreApi": {
     "majorVersion": 1,
-    "minorVersion": 24
+    "minorVersion": 28
   },
   "preloadedJs": [
     {
@@ -83,7 +83,7 @@
     {
       "machineName": "H5P.Table",
       "majorVersion": 1,
-      "minorVersion": 1
+      "minorVersion": 2
     },
     {
       "machineName": "H5P.Video",
@@ -118,7 +118,7 @@
     {
       "machineName": "H5P.DragQuestion",
       "majorVersion": 1,
-      "minorVersion": 14
+      "minorVersion": 15
     },
     {
       "machineName": "H5P.Summary",
@@ -133,12 +133,7 @@
     {
       "machineName": "H5P.InteractiveVideo",
       "majorVersion": 1,
-      "minorVersion": 24
-    },
-    {
-      "machineName": "H5P.CoursePresentation",
-      "majorVersion": 1,
-      "minorVersion": 24
+      "minorVersion": 28
     },
     {
       "machineName": "H5P.MarkTheWords",
@@ -179,6 +174,11 @@
       "machineName": "H5P.FontIcons",
       "majorVersion": 1,
       "minorVersion": 0
+    },
+    {
+      "machineName": "H5P.MultiMediaChoice",
+      "majorVersion": 0,
+      "minorVersion": 3
     }
   ]
 }

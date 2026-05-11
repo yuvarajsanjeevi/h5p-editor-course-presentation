@@ -49,6 +49,7 @@ H5PEditor.CoursePresentation = function (parent, field, params, setValue) {
 
       // Enable adjustments
       that.cp.$container.addClass('h5p-active-surface');
+      that.cp.$wrapper.addClass('h5p-course-presentation-active-surface');
 
       // Remove navigation
       that.cp.$progressbar.remove();
@@ -88,6 +89,27 @@ H5PEditor.CoursePresentation = function (parent, field, params, setValue) {
       this.processPdf(localStorage.getItem('coursePresentationFromFile'), this);
     }, 5000);
   }
+
+  /**
+   * Position label left or right depending on label size.
+   * @param {HTMLElement} labelElement Label element to position left/right.
+   */
+  this.positionLabel = (labelElement) => {
+    if (!labelElement) {
+      return;
+    }
+
+    labelElement.classList.remove('left');
+    const labelRect = labelElement.getBoundingClientRect();
+    const editorOffset = this.$item.get(0).offsetLeft;
+
+    if (
+      -editorOffset + labelRect.x + labelRect.width >
+        this.cp.$container.get(0).offsetWidth
+    ) {
+      labelElement.classList.add('left');
+    }
+  };
 };
 
 H5PEditor.CoursePresentation.prototype = Object.create(H5P.DragNBar.FormManager.prototype);
@@ -110,7 +132,7 @@ H5PEditor.CoursePresentation.prototype.updateElementSizes = function (heightRati
   // Go through all slides
   for (var i = 0; i < this.params.slides.length; i++) {
     var slide = this.params.slides[i];
-    var $slideElements = $slides.eq(i).children();
+    var $slideElements = $slides.eq(i).find('.h5p-element');
 
     for (var j = 0; j < slide.elements.length; j++) {
       var element = slide.elements[j];
@@ -163,9 +185,9 @@ H5PEditor.CoursePresentation.prototype.addElement = function (library, options) 
 
       var libraryName = library.split(' ')[0];
       switch (libraryName) {
-        case 'H5P.Audio':
-          elementParams.width = 2.577632696;
-          elementParams.height = 5.091753604;
+        case 'H5P.Audio': // 60 x 60 wrapper on biggest iframe size
+          elementParams.width = 6.90019;
+          elementParams.height = 13.45019;
           elementParams.action.params.fitToWrapper = true;
           break;
 
@@ -189,6 +211,10 @@ H5PEditor.CoursePresentation.prototype.addElement = function (library, options) 
           elementParams.width = 41.89;
           elementParams.height = 78;
           elementParams.backgroundOpacity = 100;
+          break;
+
+        case 'H5P.MultiMediaChoice':
+          elementParams.action.params.behaviour = { aspectRatio: '16to9' }
           break;
       }
     }
@@ -645,6 +671,11 @@ H5PEditor.CoursePresentation.prototype.initializeDNB = function () {
           that.showElementForm(element, that.dnb.$element, params);
         }
       }
+
+      // Position label left or right depending on label size
+      that.positionLabel(
+        element.$wrapper.get(0).querySelector('.h5p-element-button-label')
+      );
     };
 
     /**
@@ -952,10 +983,7 @@ H5PEditor.CoursePresentation.prototype.initKeywordInteractions = function () {
   // Opacity for keywords list
   var $opacityKeywords = this.$bar.find('.h5p-keywords-opacity input').change(function () {
     var opacity = parseInt($opacityKeywords.val());
-    if (isNaN(opacity)) {
-      opacity = 90;
-    }
-    if (opacity > 100) {
+    if (isNaN(opacity) || opacity > 100) {
       opacity = 100;
     }
     if (opacity < 0) {
@@ -982,7 +1010,7 @@ H5PEditor.CoursePresentation.prototype.initKeywordInteractions = function () {
   checkDefault('keywordListEnabled', true);
   checkDefault('keywordListAlwaysShow', false);
   checkDefault('keywordListAutoHide', false);
-  checkDefault('keywordListOpacity', 90);
+  checkDefault('keywordListOpacity', 100);
 
   // Update HTML
   $enableKeywords.attr('checked', that.params.keywordListEnabled);
@@ -1074,7 +1102,7 @@ H5PEditor.CoursePresentation.prototype.updateNavigationLine = function (index) {
 
   // Update progressbar and footer
   this.cp.navigationLine.initProgressbar(hasSolutionArray);
-  this.cp.navigationLine.updateProgressBar(index);
+  this.cp.navigationLine.updateProgressBar(index, 0, false, true);
   this.cp.navigationLine.updateFooter(index);
 };
 
@@ -1462,6 +1490,7 @@ H5PEditor.CoursePresentation.prototype.generateForm = function (elementParams, t
     if (type === 'H5P.ContinuousText' || type === 'H5P.Audio') {
       // Continuous Text or Go To Slide cannot be displayed as a button
       hideFields.push('displayAsButton');
+      hideFields.push('buttonLabel');
       hideFields.push('buttonSize');
     }
     else if (type === "H5P.Shape") {
@@ -1469,6 +1498,7 @@ H5PEditor.CoursePresentation.prototype.generateForm = function (elementParams, t
       hideFields.push('alwaysDisplayComments');
       hideFields.push('backgroundOpacity');
       hideFields.push('displayAsButton');
+      hideFields.push('buttonLabel');
       hideFields.push('buttonSize');
     }
 
@@ -1494,7 +1524,10 @@ H5PEditor.CoursePresentation.prototype.generateForm = function (elementParams, t
   }
 
   // Show or hide button size dropdown depending on display as button checkbox
-  element.$form.find('.field-name-displayAsButton').each(function () { // TODO: Use showWhen in semantics.json instead…
+  // TODO: Use showWhen in semantics.json instead… But crashes in parent.ready
+  // callback in constructor because showWhen does not have an exposed "changes"
+  // variable
+  element.$form.find('.field-name-displayAsButton').each(function () {
     var buttonSizeField = ns.$(this).parent().find('.field-name-buttonSize');
 
     if (!ns.$(this).find("input")[0].checked) {
@@ -1507,6 +1540,21 @@ H5PEditor.CoursePresentation.prototype.generateForm = function (elementParams, t
       }
       else {
         buttonSizeField.addClass("h5p-hidden2");
+      }
+    });
+
+    const buttonLabelField = ns.$(this).parent().find('.field-name-buttonLabel');
+
+    if (!ns.$(this).find("input")[0].checked) {
+      buttonLabelField.addClass("h5p-hidden2");
+    }
+
+    ns.$(this).find("input").change(function (e) {
+      if (e.target.checked) {
+        buttonLabelField.removeClass("h5p-hidden2");
+      }
+      else {
+        buttonLabelField.addClass("h5p-hidden2");
       }
     });
   });
@@ -1762,7 +1810,15 @@ H5PEditor.CoursePresentation.prototype.addToDragNBar = function (element, elemen
     cornerLock: (type === 'H5P.Image' || type === 'H5P.Shape')
   };
 
-  if (type === 'H5P.Shape') {
+  if (type === 'H5P.Audio') {
+    if (
+      !elementParams.action.params.fitToWrapper &&
+      elementParams.action.params.playerMode === 'minimalistic'
+    ) {
+        options.disableResize = true;
+    }
+  }
+  else if (type === 'H5P.Shape') {
     options.minSize = 3;
     if (elementParams.action.params.type == 'vertical-line') {
       options.directionLock = "vertical";
@@ -1806,7 +1862,7 @@ H5PEditor.CoursePresentation.prototype.addToDragNBar = function (element, elemen
     var slideIndex = self.cp.$current.index();
 
     // Update visuals
-    element.$wrapper.appendTo(self.cp.$current);
+    element.$wrapper.appendTo(element.$wrapper.parent());
 
     // Find slide params
     var slide = self.params.slides[slideIndex].elements;
@@ -1832,7 +1888,7 @@ H5PEditor.CoursePresentation.prototype.addToDragNBar = function (element, elemen
     var slideIndex = self.cp.$current.index();
 
     // Update visuals
-    element.$wrapper.prependTo(self.cp.$current);
+    element.$wrapper.prependTo(element.$wrapper.parent());
 
     // Find slide params
     var slide = self.params.slides[slideIndex].elements;
@@ -2010,6 +2066,7 @@ H5PEditor.CoursePresentation.prototype.showElementForm = function (element, $wra
    * @private
    */
   const handleFormclose = function () {
+    that.dnb.toggleDrag(true);
     that.off('formremove', handleFormremove);
     that.off('formdone', handleFormdone);
     that.off('formclose', handleFormclose);
@@ -2064,6 +2121,9 @@ H5PEditor.CoursePresentation.prototype.showElementForm = function (element, $wra
     customTitle = H5PEditor.t('H5PEditor.CoursePresentation', 'goToSlide');
     customIconId = 'gotoslide';
   }
+
+  // Disable dragging in any new dnb elements
+  that.dnb.toggleDrag(false);
 
   // Open a new form pane with the element form
   that.openForm(libraryField, element.$form[0], null, customTitle, customIconId);
@@ -2262,9 +2322,13 @@ H5PEditor.CoursePresentation.findField = function (name, fields) {
  * @param {object} dialogOptions Dialog options.
  * @returns {HTMLElement} confirmationDialog
  */
-H5PEditor.CoursePresentation.prototype.showConfirmationDialog = function (dialogOptions) {
-  const confirmationDialog = new H5P.ConfirmationDialog(dialogOptions)
-    .appendTo(document.body);
+H5PEditor.CoursePresentation.prototype.showConfirmationDialog = function (
+  dialogOptions
+) {
+  const confirmationDialog = new H5P.ConfirmationDialog({
+    ...dialogOptions,
+    theme: true,
+  }).appendTo(document.body);
 
   confirmationDialog.show(this.$item.offset().top);
   return confirmationDialog;
@@ -2376,7 +2440,6 @@ H5PEditor.CoursePresentation.prototype.addPdfSlides = function (slides, that) {
 };
 /** @constant {Number} */
 H5PEditor.CoursePresentation.RATIO_SURFACE = 16 / 9;
-
 
 // Tell the editor what widget we are.
 H5PEditor.widgets.coursepresentation = H5PEditor.CoursePresentation;
